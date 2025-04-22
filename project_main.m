@@ -41,4 +41,29 @@ eta_1 = 1;
 eta_2 = 1;
 t_0 = 0.1; % mm
 
+% Failure properties
+ult_strain_f = 0.01;
+F_mt = 0.120; % GPa
+F_mc = 0.150; % GPa
+F_ms = 0.080; % GPa
 
+%% 1.1 Design for Stiffness
+
+% Stiffness Criteria:
+A_xx_min = 100000; % N/mm
+A_xx_overall_min = 30000; % N/mm
+D_xx_min = 25000; % Nmm
+D_yy_min = 15000; % Nmm
+
+
+%% 1.2 Design for Strength
+
+% Loads to survive:
+N_xx = 600; % N/mm
+N_thetatheta = 200; % N/mm applied in any possible direction theta
+M_xx_t = 100; % N
+M_xx_c = -100; % N
+
+%% 1.3 Design for Stiffness and Strength
+
+% Use Stiffness and Load requirements from previous sections
