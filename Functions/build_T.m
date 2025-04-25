@@ -1,5 +1,5 @@
 function T = build_T(theta)
-    % build_T - Constructs the transformation matrix for a given ply angle
+% build_T - Constructs the transformation matrix for a given ply angle
     %
     % Inputs:
     %   theta - Rotation angle in radians

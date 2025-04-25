@@ -1,5 +1,5 @@
 function abd = get_abd(ABD)
-    % get_abd - Computes the inverse ABD matrix for a laminate
+% get_abd - Computes the inverse ABD matrix for a laminate
     %
     % Inputs:
     %   ABD - 6x6 stiffness matrix of the laminate

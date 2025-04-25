@@ -1,0 +1,83 @@
+{
+  "name": "asen-5212-composites-project",
+  "version": "1.0.0",
+  "description": "Final project for ASEN 5212 - Composite Structures and Materials",
+  "main": "project_main.m",
+  "scripts": {
+    "start": "matlab -r project_main"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brycepfuetze/ASEN-5212-Composites-Project.git"
+  },
+  "author": "Claire Kent, Bryce Pfuetze, Samuel Hatton",
+  "license": "MIT",
+  "dependencies": {
+    "laminate_stiffness": {
+      "path": "Functions/laminate_stiffness.m",
+      "depends_on": [
+        "build_Q_comb",
+        "calculate_ABD_matrix",
+        "av_lam_stif"
+      ]
+    },
+    "build_Q_comb": {
+      "path": "Functions/build_Q_comb.m",
+      "depends_on": [
+        "calculate_Q_S_matrix"
+      ]
+    },
+    "calculate_ABD_matrix": {
+      "path": "Functions/calculate_ABD_matrix.m",
+      "depends_on": []
+    },
+    "av_lam_stif": {
+      "path": "Functions/av_lam_stif.m",
+      "depends_on": [
+        "get_abd"
+      ]
+    },
+    "get_abd": {
+      "path": "Functions/get_abd.m",
+      "depends_on": []
+    },
+    "build_T": {
+      "path": "Functions/build_T.m",
+      "depends_on": []
+    },
+    "rotate_vector": {
+      "path": "Functions/rotate_vector.m",
+      "depends_on": [
+        "build_T"
+      ]
+    },
+    "compute_lamina_stress": {
+      "path": "Functions/compute_lamina_stress.m",
+      "depends_on": [
+        "compute_lamina_strain"
+      ]
+    },
+    "compute_lamina_strain": {
+      "path": "Functions/compute_lamina_strain.m",
+      "depends_on": [
+        "build_z_from_t"
+      ]
+    },
+    "build_z_from_t": {
+      "path": "Functions/build_z_from_t.m",
+      "depends_on": []
+    },
+    "check_tsaiwu_2d": {
+      "path": "Functions/check_tsaiwu_2d.m",
+      "depends_on": []
+    },
+    "get_E_ratio": {
+      "path": "Functions/get_E_ratio.m",
+      "depends_on": []
+    },
+    "t_from_Vf": {
+      "path": "Functions/t_from_Vf.m",
+      "depends_on": []
+    }
+  }
+}
