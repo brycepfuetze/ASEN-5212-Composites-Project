@@ -1,37 +1,32 @@
-function Q_combined = build_Q_comb(fiber_properties, matrix_properties, composite_properties, theta)
-    % Function to build the combined Q array for all lamina
+function Q_combined = build_Q_comb(fiber_properties, matrix_properties, composite_properties, layup)
+    % build_Q_comb - Constructs a combined Q matrix for all plies in a laminate
     %
     % Inputs:
-    %   fiber_properties        E_1f, E_2f, G_12f, nu_12f
-    %   matrix_properties       E_m, nu_m
-    %   composite_properties    V_f, xi_1, xi_2
-    %   theta                   Vector of ply angles [radians]
+    %   fiber_properties    - Vector containing fiber material properties [E_1f, E_2f, G_12f, nu_12f]
+    %   matrix_properties   - Vector containing matrix material properties [E_m, nu_m]
+    %   composite_properties- Vector containing composite properties [V_f, xi_1, xi_2]
+    %   layup               - Vector of ply angles (in radians)
     %
     % Outputs:
-    %   Q_combined - 3x3n matrix containing Q matrices for all plies concatenated
-    %                horizontally where n is number of plies
+    %   Q_combined          - 3x(3n) array containing the combined stiffness matrices for all plies
     %
-    % Method:
-    %   1. Loop through each ply angle
-    %   2. Calculate Q matrix for each ply using calculate_Q_S_matrix
-    %   3. Combine Q matrices into single array
-    %
-
+    % Dependencies:
+    %   calculate_Q_S_matrix
 
     % Number of lamina
-    n = length(theta);
-    
+    n = length(layup);
+
     % Initialize combined Q array
     Q_combined = zeros(3,3*n);
-    
+
     % Loop through each lamina
     for i = 1:n
         % Append lamina-specific properties
-        composite_properities = [composite_properties, theta(i)];
-        
+        composite_properities = [composite_properties, layup(i)];
+
         % Compute Q matrix for the current lamina
         [Qi,~] = calculate_Q_S_matrix(fiber_properties,matrix_properties,composite_properities);
-        
+
         % Store the Q matrix in the combined array
         Q_combined(:,(3*i-2):(3*i)) = Qi;
     end

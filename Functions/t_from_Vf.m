@@ -8,10 +8,11 @@ function t = t_from_Vf(V_f)
     %       Assumes the real quantity of fiber in the lamina is constant: 0.05 mm of thickness must be made up of fibers.
     %           -> this implies that lamina thickness is equal to the fiber thickness divided by V_f.
 
+    % Check Inputs
     if V_f < 0
         error("Non-physical volume fraction number (V_f < 0)")
     end
-    
+
     if V_f > 1
         error("Non-physical volume fraction number (V_f > 1)")
     end
