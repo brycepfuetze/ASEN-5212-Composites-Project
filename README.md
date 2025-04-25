@@ -49,16 +49,90 @@
   - `fiber_properties`: Fiber material properties.
   - `matrix_properties`: Matrix material properties.
   - `composite_properties`: Composite properties (`V_f`, `xi_1`, `xi_2`).
-  - `theta`: Vector of ply angles (in radians).
+  - `layup`: Vector of ply angles (in radians).
 - **Outputs**:
   - `Q_combined`: Combined stiffness matrices for all plies.
 - **Method**:
   - Loops through each ply, calculates its `Q` matrix using `calculate_Q_S_matrix`, and concatenates the results.
 
+### `build_T.m`
+- **Purpose**: Constructs the 3x3 transformation matrix for a given ply angle.
+- **Inputs**:
+  - `theta`: Ply angle in radians.
+- **Outputs**:
+  - `T`: 3x3 transformation matrix.
+
+### `build_z_from_t.m`
+- **Purpose**: Computes the z-coordinates of the top and bottom surfaces of each lamina in the laminate.
+- **Inputs**:
+  - `t_vector`: Vector of thicknesses for each lamina.
+- **Outputs**:
+  - `z`: Vector of z-coordinates for each interface.
+
+### `check_tsaiwu_2d.m`
+- **Purpose**: Evaluates the Tsai-Wu failure criterion for a 2D stress state in a lamina.
+- **Inputs**:
+  - `stress`: Stress vector for the lamina.
+  - `strengths`: Material strength parameters.
+- **Outputs**:
+  - `failure`: Boolean indicating if failure occurs.
+  - `margin`: Margin of safety.
+
+### `compute_lamina_strain.m`
+- **Purpose**: Computes the strain in each lamina given midplane strains and curvatures.
+- **Inputs**:
+  - `midplane_strain`: Midplane strain vector.
+  - `curvature`: Curvature vector.
+  - `z`: Vector of z-coordinates for each lamina.
+- **Outputs**:
+  - `lamina_strain`: Strain in each lamina.
+
+### `compute_lamina_stress.m`
+- **Purpose**: Computes the stress in each lamina given strains and stiffness matrices.
+- **Inputs**:
+  - `lamina_strain`: Strain in each lamina.
+  - `Q_combined`: Combined stiffness matrices for all plies.
+- **Outputs**:
+  - `lamina_stress`: Stress in each lamina.
+
+### `get_abd.m`
+- **Purpose**: Computes the inverse ABD (compliance) matrix for a laminate.
+- **Inputs**:
+  - `ABD`: 6x6 ABD stiffness matrix.
+- **Outputs**:
+  - `abd`: 6x6 compliance matrix.
+
+### `get_E_ratio.m`
+- **Purpose**: Computes the ratio of the larger modulus to the smaller modulus.
+- **Inputs**:
+  - `Ex`: Modulus in the x-direction.
+  - `Ey`: Modulus in the y-direction.
+- **Outputs**:
+  - `E_ratio`: Ratio of the larger modulus to the smaller modulus.
+
+### `laminate_stiffness.m`
+- **Purpose**: Computes laminate stiffness properties and matrices.
+- **Inputs**:
+  - `fiber_properties`: Fiber material properties.
+  - `matrix_properties`: Matrix material properties.
+  - `composite_properties`: Composite properties.
+  - `layup`: Vector of ply angles (in radians).
+  - `t`: Thickness of each lamina.
+- **Outputs**:
+  - `Ex`: Average laminate stiffness in the x-direction.
+  - `Ey`: Average laminate stiffness in the y-direction.
+  - `ABD`: 6x6 ABD stiffness matrix.
+  - `Q_combined`: Combined stiffness matrices for all plies.
+  - `t_vector`: Vector of thicknesses for each lamina.
+
+### `rotate_vector.m`
+- **Purpose**: Rotates a stress or strain vector by a given ply angle using the transformation matrix.
+- **Inputs**:
+  - `vector`: Stress or strain vector.
+  - `theta`: Ply angle in radians.
+- **Outputs**:
+  - `rotated_vector`: Rotated vector.
+
 ### `project_main.m`
-- **Purpose**: Main script for the composite design project.
-- **Key Sections**:
-  - **Material Property Definition**: Defines material properties for fibers, matrix, and composite.
-  - **Design for Stiffness**: Specifies stiffness criteria for the laminate.
-  - **Design for Strength**: Specifies strength requirements for the laminate under various loads.
-  - **Design for Stiffness and Strength**: Combines stiffness and strength requirements for final design.
+- **Purpose**: Main script to run the composite laminate analysis workflow.
+- **Inputs/Outputs**: Varies depending on analysis setup.
