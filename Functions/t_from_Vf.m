@@ -1,8 +1,11 @@
-function t = t_from_Vf(V_f)
+function t = t_from_Vf(V_f,n)
     % Inputs:
     %       V_f     volume fraction, between 0 and 1. Fraction of volume made up of fibers.
+    %       n       OPTIONAL: number of lamina in layup.
     % Outputs:
     %       t       thickness of a lamina with volume fraction V_f. [mm]
+    %               OR:
+    %                   nx1 vector containing t in each element, thickness vector
     %
     % Method:
     %       Assumes the real quantity of fiber in the lamina is constant: 0.05 mm of thickness must be made up of fibers.
@@ -39,4 +42,8 @@ function t = t_from_Vf(V_f)
         end
     end
 
+    if nargin > 1
+        t = ones(n,1) * t;
+    end
+    
 end

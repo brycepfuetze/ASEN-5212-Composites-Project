@@ -41,11 +41,26 @@ eta_1 = 1;
 eta_2 = 1;
 t_0 = 0.1; % mm
 
+% Form input vectors
+fiber_properties = [E_1f, E_2f, G_12f, nu_12f];
+matrix_properties = [E_m, nu_m];
+% composite_properties = [V_f, xi_1, xi_2];
+
 % Failure properties
 ult_strain_f = 0.01;
 F_mt = 0.120; % GPa
 F_mc = 0.150; % GPa
 F_ms = 0.080; % GPa
+
+%% Define Candidate Layups
+
+layup_1 = @(phi) [0 pi/4 -pi/4 pi/2 pi/2 -pi/4 pi/4 0] + phi; % [0 45 -45 90]_s
+
+
+%%% vary V_f to pick an optimal one:
+mass_vec = get_mass(V_f, rho_f, rho_m, t_from_Vf(V_f))
+
+
 
 %% 1.1 Design for Stiffness
 
@@ -54,6 +69,10 @@ A_xx_min = 100000; % N/mm
 A_xx_overall_min = 30000; % N/mm
 D_xx_min = 25000; % Nmm
 D_yy_min = 15000; % Nmm
+
+
+
+
 
 
 %% 1.2 Design for Strength
