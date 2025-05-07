@@ -8,6 +8,9 @@ E2f = 14*1000; % MPa
 G12f = 10*1000; % MPa
 % epoxy properties
 Em = 3.5*1000; % MPa
+nu_m = 0.37;
+Gm  = Em / (2 * (1 + nu_m));
+
 % failure properties
 eps_f = 0.01; % ultimate strain of fibers in tension
 Fmt = 120; % failure strength of matrix in tension, MPa
