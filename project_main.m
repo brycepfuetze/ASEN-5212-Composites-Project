@@ -67,6 +67,23 @@ layup_2 = @(phi) deg2rad([0 60 -60 -60 60 0]) + phi; % [0/60/-60]_s
 % xlabel("$$V_f$$")
 % ylabel("Areal Mass $$[kg/m^2]$$")
 
+m = @(n, vf) 0.05 * n * rho_f + ((1./vf) - 1) * 0.05 * n * rho_m;
+
+m1 = m(1:25, 0.5);
+figure
+plot(1:25,m1)
+xlabel("$$n$$")
+ylabel("Areal Mass $$[kg/m^2]$$")
+
+dmdn = mean(diff(m1));
+
+m2 = m(1,V_f);
+figure
+plot(V_f,m2)
+xlabel("$$V_f$$")
+ylabel("Areal Mass $$[kg/m^2]$$")
+
+dmdvf = mean(diff(m2));
 
 %% 1.1 Design for Stiffness
 
@@ -85,16 +102,22 @@ Dyy_vec = zeros(length(V_f),1);
 
 % layup = [0 90 0 90 90 60 -60 -60 60 90 90 0 90 0];
 % layup = [0 45 -45 90 0 60 -60 -60 60 0 90 -45 45 0];
-layup = [90 60 -60 45 -45 0 0 0 0 0 0 -45 45 -60 60 90];
+%layup = [90 60 -60 45 -45 0 0 0 0 0 0 -45 45 -60 60 90];
+layup = [55 0 90 60 -45  0 -60 60 0  45 -60 90 0 -50];
+% layup = [0 0 0 0 0 0 0 0];
 for i = 1:length(V_f)
     composite_properties = [V_f(i), xi_1, xi_2];
     t = t_from_Vf(V_f(i));
     [~,~,ABD_baseline] = laminate_stiffness(fiber_properties,matrix_properties,composite_properties, layup, t);
+    % stiffnessCheck(ABD_baseline)
     Axx_vec(i) = ABD_baseline(1,1);
     Dxx_vec(i) = ABD_baseline(4,4);
     Dyy_vec(i) = ABD_baseline(5,5);
     ABD_cell{i} = ABD_baseline;
 end
+
+ABD = ABD_cell{1};
+stiffnessCheck(ABD)
 
 figure
 plot(V_f,Axx_vec)
