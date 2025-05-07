@@ -54,6 +54,7 @@ F_mt = 0.120e3; % MPa
 F_mc = 0.150e3; % MPa
 F_ms = 0.080e3; % MPa
 
+
 %% Define Candidate Layups
 
 layup_1 = @(phi) [0 pi/4 -pi/4 pi/2 pi/2 -pi/4 pi/4 0] + phi; % [0 45 -45 90]_s
@@ -67,6 +68,23 @@ layup_2 = @(phi) deg2rad([0 60 -60 -60 60 0]) + phi; % [0/60/-60]_s
 % xlabel("$$V_f$$")
 % ylabel("Areal Mass $$[kg/m^2]$$")
 
+m = @(n, vf) 0.05 * n * rho_f + ((1./vf) - 1) * 0.05 * n * rho_m;
+
+m1 = m(1:25, 0.5);
+figure
+plot(1:25,m1)
+xlabel("$$n$$")
+ylabel("Areal Mass $$[kg/m^2]$$")
+
+dmdn = mean(diff(m1));
+
+m2 = m(1,V_f);
+figure
+plot(V_f,m2)
+xlabel("$$V_f$$")
+ylabel("Areal Mass $$[kg/m^2]$$")
+
+dmdvf = mean(diff(m2));
 
 %% 1.1 Design for Stiffness
 
@@ -84,17 +102,24 @@ Dxx_vec = zeros(length(V_f),1);
 Dyy_vec = zeros(length(V_f),1);
 
 % layup = [0 90 0 90 90 60 -60 -60 60 90 90 0 90 0];
-% layup = [0 45 -45 90 0 60 -60 -60 60 0 90 -45 45 0];
-layup = [90 60 -60 45 -45 0 0 0 0 0 0 -45 45 -60 60 90];
+% layup = [0 90 0 90 0 0 0 0 0 0 90 0 90 0];
+%layup = [90 60 -60 45 -45 0 0 0 0 0 0 -45 45 -60 60 90];
+% layup = [55 0 90 60 -45  0 -60 60 0  45 -60 90 0 -50];
+% layup = [0 0 0 0 0 0 0 0];
+layup = [0 5 -65 15 45 0 0 45 15 -65 5 0];
 for i = 1:length(V_f)
     composite_properties = [V_f(i), xi_1, xi_2];
     t = t_from_Vf(V_f(i));
-    [~,~,ABD_baseline] = laminate_stiffness(fiber_properties,matrix_properties,composite_properties, layup, t);
+    [~,~,ABD_baseline] = laminate_stiffness(fiber_properties,matrix_properties,composite_properties, deg2rad(layup), t);
+    % stiffnessCheck(ABD_baseline)
     Axx_vec(i) = ABD_baseline(1,1);
     Dxx_vec(i) = ABD_baseline(4,4);
     Dyy_vec(i) = ABD_baseline(5,5);
     ABD_cell{i} = ABD_baseline;
 end
+
+ABD = ABD_cell{1};
+stiffnessCheck(ABD)
 
 figure
 plot(V_f,Axx_vec)
@@ -162,21 +187,45 @@ M_xx_t = 100; % N
 M_xx_c = -100; % N
 
 
-layup = [90 60 -60 45 -45 0 0 0 0 0 0 -45 45 -60 60 90];
-composite_properties = [0.5 1 1];
-t = 0.1;
+Vf = 0.65;
+% layup = [90 60 -60 45 -45 0 0 0 0 0 0 -45 45 -60 60 90];
+layup = [0 0 0 -60 60 0 0 0 0 60 -60 0 0 0];
 
-load_xy = [N_xx; 0; 0; M_xx_t; 0; 0];
+pass = strengthCheck(layup,Vf);
 
-[~,~,ABD, Q_combined, t_vector] = laminate_stiffness(fiber_properties,matrix_properties,composite_properties, layup, t);
-abd = get_abd(ABD);
+% if pass
+%     disp('Passed!')
+% else
+%     disp("Fail")
+% end
 
-e_xy = abd * load_xy;
+% for i = 1:length(V_f)
+%     Vf = V_f(i);
+%     strengthCheck(layup,Vf)
+% end
 
-lamina_strain = compute_lamina_strain(e_xy, t_vector);
-lamina_stress_xy = compute_lamina_stress(Q_combined,lamina_strain);
-lamina_stress_12 = rotate_stress(lamina_stress_xy, layup);
+
+
+% composite_properties = [Vf 1 1];
+% t = 0.1;
+% 
+% [F_1t, F_1c, F_2t, F_2c, F_6] = Failure_Criteria(Vf);
+% 
+% load_xy = [N_xx; 0; 0; M_xx_t; 0; 0];
+% 
+% [~,~,ABD, Q_combined, t_vector] = laminate_stiffness(fiber_properties,matrix_properties,composite_properties, deg2rad(layup), t);
+% abd = get_abd(ABD);
+% 
+% e_xy = abd * load_xy;
+% 
+% lamina_strain = compute_lamina_strain(e_xy, t_vector);
+% lamina_stress_xy = compute_lamina_stress(Q_combined,lamina_strain);
+% lamina_stress_12 = rotate_stress(lamina_stress_xy, layup);
 % [~,criteria] = check_tsaiwu_2d(lamina_stress_12, [F_1t; F_1c; F_2t; F_2c; F_6]);
+% 
+% figure
+% bar(criteria)
+% yline(1,'--k')
 
 %% 1.3 Design for Stiffness and Strength
 
