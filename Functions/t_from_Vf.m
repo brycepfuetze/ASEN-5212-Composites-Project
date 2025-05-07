@@ -22,7 +22,7 @@ function t = t_from_Vf(V_f,n)
 
     t_f = 0.05; % thickness of carbon fibers, a constant value for this project
 
-    t = t_f / V_f; % lamina thickness
+    t = t_f ./ V_f; % lamina thickness
 
     % just double check:
     if V_f > 0.5 % there is less matrix, t < t_0
