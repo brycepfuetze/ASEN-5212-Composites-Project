@@ -114,6 +114,41 @@ xlabel("$$V_f$$")
 ylabel("$$D_{yy}$$")
 yline(D_yy_min,'k--')
 
+%% Brute force
+
+thetas = -75:15:90;
+leng = length(thetas);
+
+V_f = 0.4;
+t = t_from_Vf(V_f);
+composite_properties = [V_f, xi_1, xi_2];
+parfor a = 1:leng
+    for b = 1:leng
+        for c = 1:leng
+            for d = 1:leng
+                for e = 1:leng
+                    %for f = 1:leng
+                        %for g = 1:leng
+                        layup = deg2rad([thetas(a), thetas(b),thetas(c),thetas(d), thetas(e) 0, 0, 0, thetas(e), thetas(d), thetas(c), thetas(b), thetas(a)]);
+                        [~,~,ABD] = laminate_stiffness(fiber_properties,matrix_properties,composite_properties, layup, t);
+                        [Pass] = stiffnessCheck(ABD);
+
+                        if sum(Pass) == 4
+                            layup = rad2deg(layup)
+                            disp("Working Laminate Found")
+                            disp(sum(Pass))
+                            disp(layup)
+
+                        end
+                       % end
+                    %end
+                end
+            end
+        end
+    end
+    disp(a)
+end
+
 
 
 

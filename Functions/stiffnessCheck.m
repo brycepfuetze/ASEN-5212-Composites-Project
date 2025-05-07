@@ -1,12 +1,21 @@
-function [] = stiffnessCheck(ABD)
+function [passVec] = stiffnessCheck(ABD)
 % Take in an ABD and check if it passes the criteria for Project Part 1.1
 
-    if ABD(1,1) >= 100000; disp("Pass A_xx Criteria");
-    else; disp("Fail A_xx Criteria");
+    Axxpass = 0;
+    Axxbarpass = 0;
+    Dxxpass = 0;
+    Dyypass = 0;
+
+
+    if ABD(1,1) >= 100000
+        %disp("Pass A_xx Criteria")
+        Axxpass = 1;
+    else
+        %disp("Fail A_xx Criteria");
     end
 
 
-    Ntest = 1000;
+    Ntest = 50;
     theta = deg2rad(linspace(0,90,Ntest));
 
     Ayypass = 1;
@@ -20,16 +29,26 @@ function [] = stiffnessCheck(ABD)
         end
     end
     
-    if Ayypass == true; disp("Pass A_xx Bar Criteria")
-    else; disp("Fail A_xx Bar Criteria")
+    if Ayypass == true
+        %disp("Pass A_xx Bar Criteria")
+        Axxbarpass = 1;
+    else
+        %disp("Fail A_xx Bar Criteria")
     end
 
-    if ABD(4,4) >= 25000; disp("Pass D_xx Criteria");
-    else; disp("Fail D_xx Criteria");
+    if ABD(4,4) >= 25000
+        %disp("Pass D_xx Criteria")
+        Dxxpass = 1;
+    else
+        %disp("Fail D_xx Criteria");
     end
 
-    if ABD(5,5) >= 15000; disp("Pass D_yy Criteria");
-    else; disp("Fail D_yy Criteria");
+    if ABD(5,5) >= 15000
+        %disp("Pass D_yy Criteria")
+        Dyypass = 1;
+    else
+        %disp("Fail D_yy Criteria");
     end
 
+    passVec = [Axxpass;Axxbarpass;Dxxpass;Dyypass];
 end
