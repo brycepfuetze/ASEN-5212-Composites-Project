@@ -1,4 +1,5 @@
 function [] = stiffnessCheck(ABD)
+% Take in an ABD and check if it passes the criteria for Project Part 1.1
 
     if ABD(1,1) >= 100000; disp("Pass A_xx Criteria");
     else; disp("Fail A_xx Criteria");
