@@ -1,4 +1,8 @@
-function pass = strengthCheck(layup, V_f)
+function pass = strengthCheck(layup, V_f, plot_lever)
+    
+    if nargin < 3
+        plot_lever = false;
+    end
 
     % Carbon Fibers
     E_1f = 270e3; % MPa
@@ -59,7 +63,7 @@ function pass = strengthCheck(layup, V_f)
         [fail_comp, criteria_comp] = check_tsaiwu_2d(lamina_stress_12, [F_1t; F_1c; F_2t; F_2c; F_6]);
     
         fail = fail_ten | fail_comp;
-        criteria = max(criteria_ten,criteria_comp)
+        criteria = max(criteria_ten,criteria_comp);
     
         if any(fail)
             break;
@@ -70,29 +74,28 @@ function pass = strengthCheck(layup, V_f)
     
     if num_passed == length(theta) % this implies they all passed yay!
         pass = true;
-        fprintf("Laminate with V_f %.2f and %.0f layers Passes\n",V_f,length(layup));
+        % fprintf("Laminate with V_f %.2f and %.0f layers Passes\n",V_f,length(layup));
     else
         pass = false;
-        fprintf("Laminate with V_f %.2f and %.0f layers Fails with max criteria: %.4f\n",V_f, length(layup), max(criteria(criteria >= 1)));
+        % fprintf("Laminate with V_f %.2f and %.0f layers Fails with max criteria: %.4f\n",V_f, length(layup), max(criteria(criteria >= 1)));
     end
 
-    figure
-    b = bar(criteria);
-    yline(1,"--k")
-    % Get current axes
-    ax = gca;
-
-    % Loop through each bar and set the color based on criteria
-    for k = 1:length(criteria)
-        if criteria(k) > 1
-            b.FaceColor = 'flat';
-            b.CData(k, :) = [1 0 0]; % Red color for criteria > 1
-        else
-            b.FaceColor = 'flat';
-            b.CData(k, :) = [0 1 0]; % Green color for criteria <= 1
+    if plot_lever
+        figure
+        b = bar(criteria);
+        yline(1,"--k")
+    
+        % Loop through each bar and set the color based on criteria
+        for k = 1:length(criteria)
+            if criteria(k) > 1
+                b.FaceColor = 'flat';
+                b.CData(k, :) = [1 0 0]; % Red color for criteria > 1
+            else
+                b.FaceColor = 'flat';
+                b.CData(k, :) = [0 1 0]; % Green color for criteria <= 1
+            end
         end
     end
-
 end
 
 
