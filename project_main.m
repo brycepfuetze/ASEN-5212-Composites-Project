@@ -191,7 +191,7 @@ Vf = 0.65;
 % layup = [90 60 -60 45 -45 0 0 0 0 0 0 -45 45 -60 60 90];
 layup = [0 0 0 -60 60 0 0 0 0 60 -60 0 0 0];
 
-pass = strengthCheck(layup,Vf);
+pass = strengthCheck(layup,Vf,true);
 
 % if pass
 %     disp('Passed!')
@@ -226,6 +226,45 @@ pass = strengthCheck(layup,Vf);
 % figure
 % bar(criteria)
 % yline(1,'--k')
+
+dt = 15;
+thetas = (-90 + dt):dt:90;
+leng = length(thetas);
+
+parfor a = 1:leng
+    for b = 1:leng
+        for c = 1:leng
+            for d = 1:leng
+                for e = 1:leng
+                    %for f = 1:leng
+                        %for g = 1:leng
+                        layup = deg2rad([thetas(a), thetas(b),thetas(c),thetas(d), thetas(e) 0, 0, 0, thetas(e), thetas(d), thetas(c), thetas(b), thetas(a)]);
+                        [Pass] = strengthCheck(layup,V_f);
+                        
+                        if Pass
+                            layup = rad2deg(layup)
+                            disp("Working Laminate Found")
+                            % disp(sum(Pass))
+                            display(layup)
+
+                        end
+                       % end
+                    %end
+                end
+            end
+        end
+    end
+    disp(a)
+end
+
+
+
+
+
+
+
+
+
 
 %% 1.3 Design for Stiffness and Strength
 
