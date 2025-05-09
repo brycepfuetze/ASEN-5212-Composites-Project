@@ -21,13 +21,15 @@ set(groot,'defaultTextFontSize',16)
 
 addpath("Functions/")
 
+
+
 %% Material Property Definition
 
 % Carbon Fibers
 E_1f = 270e3; % MPa
 E_2f = 14e3; % MPa
 G_12f = 10e3; % MPa
-nu_12f = 0.22; % 
+nu_12f = 0.22; %
 rho_f = 1750; % kg/m^3
 
 % Epoxy Matrix
@@ -62,7 +64,7 @@ layup_2 = @(phi) deg2rad([0 60 -60 -60 60 0]) + phi; % [0/60/-60]_s
 
 % %%% vary V_f to pick an optimal one:
 % mass_vec = get_mass(V_f, rho_f, rho_m, t_from_Vf(V_f));
-% 
+%
 % figure
 % plot(V_f, mass_vec)
 % xlabel("$$V_f$$")
@@ -141,40 +143,89 @@ yline(D_yy_min,'k--')
 
 %% Brute force
 
-thetas = -75:15:90;
-leng = length(thetas);
+
 
 V_f = 0.4;
 t = t_from_Vf(V_f);
 composite_properties = [V_f, xi_1, xi_2];
-parfor a = 1:leng
-    for b = 1:leng
-        for c = 1:leng
-            for d = 1:leng
-                for e = 1:leng
-                    %for f = 1:leng
-                        %for g = 1:leng
-                        layup = deg2rad([thetas(a), thetas(b),thetas(c),thetas(d), thetas(e) 0, 0, 0, thetas(e), thetas(d), thetas(c), thetas(b), thetas(a)]);
-                        [~,~,ABD] = laminate_stiffness(fiber_properties,matrix_properties,composite_properties, layup, t);
-                        [Pass] = stiffnessCheck(ABD);
 
-                        if sum(Pass) == 4
-                            layup = rad2deg(layup)
-                            disp("Working Laminate Found")
-                            disp(sum(Pass))
-                            disp(layup)
+% parfor a = 1:leng
+%     for b = 1:leng
+%         for c = 1:leng
+%             for d = 1:leng
+%                 for e = 1:leng
+%                     %for f = 1:leng
+%                         %for g = 1:leng
+%                         layup = deg2rad([thetas(a), thetas(b),thetas(c),thetas(d), thetas(e) 0, 0, 0, thetas(e), thetas(d), thetas(c), thetas(b), thetas(a)]);
+%                         [~,~,ABD] = laminate_stiffness(fiber_properties,matrix_properties,composite_properties, layup, t);
+%                         [Pass] = stiffnessCheck(ABD);
+%
+%                         if sum(Pass) == 4
+%                             layup = rad2deg(layup)
+%                             disp("Working Laminate Found")
+%                             disp(sum(Pass))
+%                             disp(layup)
+%
+%                         end
+%                        % end
+%                     %end
+%                 end
+%             end
+%         end
+%     end
+%     disp(a)
+% end
 
-                        end
-                       % end
-                    %end
-                end
-            end
-        end
-    end
-    disp(a)
-end
+% % clc
+% tic;
+% % Define the thetas to be searched:
+% dt = 15;
+% thetas = (-90 + dt):dt:90; % Now this has 12 elements
+% 
+% % Define the target number of laminas:
+% n = 12;
+% n_fill = 4; % number of zero laminas to pad the middle
+% 
+% % Generate mid layers vector
+% mid_layers = zeros(1, n_fill);
+% 
+% % Get all possible angle combinations:
+% [angle_combinations, num_combinations] = build_angle_combos(thetas, n, n_fill);
+% 
+% count = 0;
+% parfor i = 1:num_combinations
+%     layup_angles = angle_combinations(i, :);
+% 
+%     % Construct the layup with varying and fixed angles
+%     layup = deg2rad([layup_angles, mid_layers, layup_angles(end:-1:1)]);
+% 
+%     [~,~,ABD] = laminate_stiffness(fiber_properties,matrix_properties,composite_properties, layup, t);
+%     [Pass] = stiffnessCheck(ABD);
+% 
+%     if sum(Pass) == 4
+%         count = count + 1;
+%         % layup_degrees = rad2deg(layup);
+%         % disp("Working Laminate Found");
+%         % disp(layup_degrees);
+%     end
+% end
+% 
+% elapsedTime = toc;
+% fprintf("Found %.0f / %.0f %.0f-lamina layups pass in %.2f seconds.\n",count, num_combinations,n,elapsedTime)
 
+% [count, winners] = parStiffnessCheck(15, 13, 5, 0.4);
 
+%%
+
+% dt_vec = [15 10 5 2.5 1];
+% 
+% for i = 1:length(dt_vec)
+%     count = parStiffnessCheck(dt_vec(i), 12, 4, 0.4);
+%     if count > 0
+%         fprintf("%.0f passing layups found with dt = %.1f\n",count,dt_vec(i));
+%         break
+%     end
+% end
 
 
 
@@ -189,83 +240,112 @@ M_xx_c = -100; % N
 
 Vf = 0.65;
 % layup = [90 60 -60 45 -45 0 0 0 0 0 0 -45 45 -60 60 90];
-layup = [0 0 0 -60 60 0 0 0 0 60 -60 0 0 0];
+layup = [0 60 -60 -60 60 0];
 
-pass = strengthCheck(layup,Vf,true);
+pass = strengthCheck(deg2rad(layup),Vf,true);
 
-% if pass
-%     disp('Passed!')
-% else
-%     disp("Fail")
+%% Brute Force check lamina sizes for strength
+
+%%% For lamina less than 16, we can afford to run standard MATLAB Code
+
+% % Initialize detail savers:
+% count_vec = zeros(11,1);
+% winners_array = cell(11,1);
+% 
+% % Loop through 5-10 lamina, holding 0 or 1 middle lamina constant
+% for i = 5:10
+%     n = i;
+%     if rem(n,2) == 0
+%         n_fill = 0;
+%     else
+%         n_fill = 1;
+%     end
+%     [count_vec(i-4), winners_array{i-4}] = parStrengthCheck(15, n, n_fill, 0.65);
+%     fprintf("Completed n = %.0f\n", n)
+% end
+% 
+% % We need to hold more constant to make compute times half reasonable:
+% % Loop through 11-15 lamina, holding 4 or 5 middle lamina constant:
+% for i = 11:15
+%     n = i;
+%     if rem(n,2) == 0
+%         n_fill = 4;
+%     else
+%         n_fill = 5;
+%     end
+%     [count_vec(i-4), winners_array{i-4}] = parStrengthCheck(15, n, n_fill, 0.65);
+%     fprintf("Completed n = %.0f\n", n)
 % end
 
-% for i = 1:length(V_f)
-%     Vf = V_f(i);
-%     strengthCheck(layup,Vf)
-% end
+%%%%%% Need More Options %%%%%%
+% It seems like blocking the center out as zeros is disadvantageous, 90s
+% are maybe better. Let's brute force without restricting the middle
+% laminas using compiled C code to run faster:
 
+% parStrengthCheck_3_mex(1,6,0,0.65);
+% parStrengthCheck_3_mex(5,7,1,0.65);
+% parStrengthCheck_4_mex(5,8,0,0.65);
+% parStrengthCheck_4_mex(15,9,1,0.65);
+% parStrengthCheck_5_mex(15,10,0,0.65);
+% parStrengthCheck_5_mex(30,11,1,0.65); % < 2 minutes
+% parStrengthCheck_6_mex(15,12,0,0.65); % 2 minutes
+% parStrengthCheck_6_mex(15,13,1,0.65); % 3ish minutes
+% parStrengthCheck_7_mex(15,14,0,0.65); % 2188 sec = 36.5 minutes
+% parStrengthCheck_7_mex(15,15,1,0.65); % 2325 sec = 38:45 minutes
+    % Can't compute 10 deg increments, int overflow problems
+% parStrengthCheck_8_mex(30,16,0,0.65);
 
+% 30 and 45 deg return the same solutions for 16 layers!
 
-% composite_properties = [Vf 1 1];
-% t = 0.1;
-% 
-% [F_1t, F_1c, F_2t, F_2c, F_6] = Failure_Criteria(Vf);
-% 
-% load_xy = [N_xx; 0; 0; M_xx_t; 0; 0];
-% 
-% [~,~,ABD, Q_combined, t_vector] = laminate_stiffness(fiber_properties,matrix_properties,composite_properties, deg2rad(layup), t);
-% abd = get_abd(ABD);
-% 
-% e_xy = abd * load_xy;
-% 
-% lamina_strain = compute_lamina_strain(e_xy, t_vector);
-% lamina_stress_xy = compute_lamina_stress(Q_combined,lamina_strain);
-% lamina_stress_12 = rotate_stress(lamina_stress_xy, layup);
-% [~,criteria] = check_tsaiwu_2d(lamina_stress_12, [F_1t; F_1c; F_2t; F_2c; F_6]);
-% 
-% figure
-% bar(criteria)
-% yline(1,'--k')
+[count_c, winners_c, time_c] = parStrengthCheck_8_mex(45, 16, 0, 0.65);
+% [count, winners, time] = parStrengthCheck(45, 16, 0, 0.65);
 
-dt = 15;
-thetas = (-90 + dt):dt:90;
-leng = length(thetas);
-
-parfor a = 1:leng
-    for b = 1:leng
-        for c = 1:leng
-            for d = 1:leng
-                for e = 1:leng
-                    %for f = 1:leng
-                        %for g = 1:leng
-                        layup = deg2rad([thetas(a), thetas(b),thetas(c),thetas(d), thetas(e) 0, 0, 0, thetas(e), thetas(d), thetas(c), thetas(b), thetas(a)]);
-                        [Pass] = strengthCheck(layup,V_f);
-                        
-                        if Pass
-                            layup = rad2deg(layup)
-                            disp("Working Laminate Found")
-                            % disp(sum(Pass))
-                            display(layup)
-
-                        end
-                       % end
-                    %end
-                end
-            end
-        end
-    end
-    disp(a)
+% Want lightest option! => decrease volume fraction to narrow it down.
+pass_vec = zeros(1,3);
+for i = 1:3
+    pass_vec(i) = strengthCheck(deg2rad(winners_c(i,:)), 0.49, true);
 end
 
-
-
-
-
-
-
-
+strength_pick.n = 16;
+strength_pick.layup = winners_c(1,:);
+strength_pick.Vf = 0.49;
+strength_pick.tvec = t_from_Vf(strength_pick.Vf, strength_pick.n);
+strength_pick.m = get_mass(strength_pick.Vf,rho_f,rho_m,strength_pick.tvec);
 
 
 %% 1.3 Design for Stiffness and Strength
 
 % Use Stiffness and Load requirements from previous sections
+
+% Our stiffness lamina doesn't work, I assume, but let's check:
+
+stiff_layup = [0 90 0 75 0 0 0 0 0 75 0 90 0];
+stiff_combined_pass = strengthCheck(deg2rad(stiff_layup), 0.49, true);
+
+% Nope!
+
+% Check strength lamina for stiffness:
+
+
+composite_properties = [strength_pick.Vf, 1, 1];
+[~,~,strength_pick.ABD] = laminate_stiffness(fiber_properties,matrix_properties,composite_properties, deg2rad(strength_pick.layup), strength_pick.tvec(1));
+strength_combined_pass = stiffnessCheck(strength_pick.ABD)
+
+% only dyy fails!
+% what if we add a 90 on the outside?
+
+%%
+
+% layup = strength_pick.layup;
+layup = winners_c(1,:);
+Vf = 0.65;
+% layup([1, end]) = 90;
+
+Vf = 0.4:0.01:0.65;
+for i = 1:length(Vf)
+    pass = checkBoth(layup, Vf(i)); % passes dyy but not tsai-hill
+    disp(sum(pass));
+end
+
+%% Need to go to 17:
+

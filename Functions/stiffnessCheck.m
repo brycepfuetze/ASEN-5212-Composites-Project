@@ -8,10 +8,10 @@ function [passVec] = stiffnessCheck(ABD)
 
 
     if ABD(1,1) >= 100000
-        %disp("Pass A_xx Criteria")
+        % disp("Pass A_xx Criteria")
         Axxpass = 1;
     else
-        %disp("Fail A_xx Criteria");
+        % disp("Fail A_xx Criteria");
     end
 
 
@@ -30,24 +30,24 @@ function [passVec] = stiffnessCheck(ABD)
     end
     
     if Ayypass == true
-        %disp("Pass A_xx Bar Criteria")
+        % disp("Pass A_xx Bar Criteria")
         Axxbarpass = 1;
     else
-        %disp("Fail A_xx Bar Criteria")
+        % disp("Fail A_xx Bar Criteria")
     end
 
     if ABD(4,4) >= 25000
-        %disp("Pass D_xx Criteria")
+        % disp("Pass D_xx Criteria")
         Dxxpass = 1;
     else
-        %disp("Fail D_xx Criteria");
+        % disp("Fail D_xx Criteria");
     end
 
     if ABD(5,5) >= 15000
-        %disp("Pass D_yy Criteria")
+        % disp("Pass D_yy Criteria")
         Dyypass = 1;
     else
-        %disp("Fail D_yy Criteria");
+        % disp("Fail D_yy Criteria");
     end
 
     passVec = [Axxpass;Axxbarpass;Dxxpass;Dyypass];
