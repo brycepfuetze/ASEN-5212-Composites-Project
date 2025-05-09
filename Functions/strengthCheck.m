@@ -1,5 +1,14 @@
 function pass = strengthCheck(layup, V_f, plot_lever)
-    
+% Inputs:
+%   layup       Vector of ply angles (in radians)
+%   V_f         Composite Volume Fraction
+%   plot_lever  OPTIONAL. When true, the function outputs a nice plot.
+%               Default is false.
+%
+% Outputs:
+%   pass        Boolean value. true when the input layup passes the
+%               strength test criteria.
+
     if nargin < 3
         plot_lever = false;
     end
