@@ -1,4 +1,4 @@
-function [count, winners, elapsedTime] = parStrengthCheck(dt, n, n_fill, V_f)
+function [count, winners, elapsedTime] = parCheck_c(dt, n, n_fill, V_f) %#codegen
 % Inputs:
 %   dt          Theta step size in degrees
 %   n           The number of lamina in the laminate being designed.
@@ -9,16 +9,28 @@ function [count, winners, elapsedTime] = parStrengthCheck(dt, n, n_fill, V_f)
 %   elapsedTime  Time it took in seconds
 %
 % Outputs:
-%   count       The number of laminate designs that pass the strength check
+%   count       The number of laminate designs that pass the strength and stiffness check
 %   winners     A countxn array containing the layups that pass the check
 %
 % Dependencies:
 %   t_from_Vf
 %   build_angle_combos
+%   laminate_stiffness
 %   strengthCheck
+%   stiffnessCheck
+%
+% Note:
+%   This version of the function is intended for use with MATLAB Coder to compile into C code.
 %
 % Searches all possible symmetric layups for a given number of plies and volume fraction,
-% and returns those that pass the strength check.
+% and returns those that pass both the strength and stiffness checks.
+
+    arguments
+        dt (1,1) double
+        n  (1,1) double
+        n_fill (1,1) double
+        V_f (1,1) double
+    end
 
     % Carbon Fibers
     E_1f = 270e3; % MPa
@@ -43,22 +55,35 @@ function [count, winners, elapsedTime] = parStrengthCheck(dt, n, n_fill, V_f)
     thetas = (-90 + dt):dt:90;
 
     % Generate mid layers vector
-    mid_layers = zeros(1, n_fill);
+    mid_layers = 90 * ones(1, n_fill);
 
     % Get all possible angle combinations:
-    [angle_combinations, num_combinations] = build_angle_combos(thetas, n, n_fill);
+    [angle_combinations, num_combinations] = build_angle_combos(thetas);
     tic
     count = 0;
     winners = [];
-    parfor i = 1:num_combinations
+    for i = 1:num_combinations
         layup_angles = angle_combinations(i, :);
 
         % Construct the layup with varying and fixed angles
-        layup = deg2rad([layup_angles, mid_layers, layup_angles(end:-1:1)]);
+        layup = deg2rad([0, 0, layup_angles, mid_layers, layup_angles(end:-1:1), 0, 0]);
 
-        [Pass] = strengthCheck(layup, V_f);
+        strength_pass = strengthCheck(layup, V_f);
 
-        if Pass
+        [~,~,ABD] = laminate_stiffness(fiber_properties,matrix_properties,composite_properties, layup, t);
+        stiff_pass = stiffnessCheck(ABD);
+
+        % if strength_pass
+        %     fprintf("Passed strength check after %0.2f sec.\n", toc)
+        % end
+        %
+        % if sum(stiff_pass) == 4
+        %     fprintf("Passed stiffness check after %0.2f sec.\n", toc)
+        % end
+
+        if strength_pass && (sum(stiff_pass) == 4)
+            fprintf("Winner Found after %0.2f sec.\n", toc)
+            disp(layup)
             count = count + 1;
             winners = [winners;rad2deg(layup)];
             % layup_degrees = rad2deg(layup);

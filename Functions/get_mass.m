@@ -16,6 +16,7 @@ function mass = get_mass(V_f, rho_f, rho_m, thickness)
 %   mass        The areal mass of the composite laminate in [kg/m^2]
 %
 
+    % If thickness is a vector, sum to get total thickness
     if length(thickness) ~= 1 % implies a vector of lamina thicknesses
         thickness = thickness(:);
         h = sum(thickness);
@@ -23,8 +24,10 @@ function mass = get_mass(V_f, rho_f, rho_m, thickness)
         h = thickness;
     end
 
+    % Calculate average density of the composite
     rho = V_f * rho_f + (1 - V_f) * rho_m;
 
-    mass = rho * h;
+    % Compute areal mass (convert thickness from mm to m)
+    mass = 0.001 * rho * h;
 
 end
