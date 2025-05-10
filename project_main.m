@@ -22,6 +22,18 @@ set(groot,'defaultTextFontSize',16)
 addpath("Functions/")
 
 
+%%%% NOTE %%%%
+%{
+This script is super messy. We did lots of commenting in and out of various
+code blocks, and things evolved very quickly. The majority of the code base
+is well determined functions, but several of the higher level ones also
+started to become comment-modifiable jungles.
+
+Don't run this script! Some of the sections will run for a very long time.
+It is safer to run individual sections one at a time after you've read them
+and thought about what they might do to your CPU.
+
+%}
 
 %% Material Property Definition
 
@@ -56,6 +68,43 @@ F_mt = 0.120e3; % MPa
 F_mc = 0.150e3; % MPa
 F_ms = 0.080e3; % MPa
 
+%%
+
+m_one_layer = zeros(length(V_f),1);
+for i = 1:length(m_one_layer)
+    m_one_layer(i) = get_mass(V_f(i),rho_f,rho_m,t_from_Vf(V_f(i)));
+end
+
+
+m_per_layer_04 = get_mass(0.4,rho_f,rho_m,t_from_Vf(0.4));
+m_per_layer_05 = get_mass(0.5,rho_f,rho_m,t_from_Vf(0.5));
+m_per_layer_065 = get_mass(0.65,rho_f,rho_m,t_from_Vf(0.65));
+
+m_one_Vf_04 = m_per_layer_04 * [1:25];
+m_one_Vf_05 = m_per_layer_05 * [1:25];
+m_one_Vf_065 = m_per_layer_065 * [1:25];
+
+figure
+subplot(1,2,1)
+plot(V_f,m_one_layer)
+grid on
+grid minor
+xlabel("$$V_f$$")
+ylabel("Areal Mass $$[kg/m^2]$$")
+title("Areal Mass of One Lamina vs. $$V_f$$")
+% legend("$$\frac{dm}{dV_f} \approx 14 \frac{kg/m^2}{\%}$$",Location="northeast")
+
+subplot(1,2,2)
+hold on;
+plot(1:25,m_one_Vf_04,"DisplayName","$$V_f = 40\%$$")
+plot(1:25,m_one_Vf_05,"DisplayName","$$V_f = 50\%$$")
+plot(1:25,m_one_Vf_065,"DisplayName","$$V_f = 65\%$$")
+grid on
+grid minor
+xlabel("Layer Count")
+ylabel("Areal Mass $$[kg/m^2]$$")
+title("Laminate Mass vs. Layer Count")
+legend(Location="northwest")
 
 %% Define Candidate Layups
 
@@ -74,18 +123,25 @@ m = @(n, vf) 0.05 * n * rho_f + ((1./vf) - 1) * 0.05 * n * rho_m;
 
 m1 = m(1:25, 0.5);
 figure
+subplot(1,2,1)
 plot(1:25,m1)
+grid on
+grid minor
 xlabel("$$n$$")
 ylabel("Areal Mass $$[kg/m^2]$$")
+title("Laminate Areal Mass; $$V_f = 0.5$$")
 
 dmdn = mean(diff(m1));
 
 m2 = m(1,V_f);
-figure
+% figure
+subplot(1,2,2)
 plot(V_f,m2)
+grid on
+grid minor
 xlabel("$$V_f$$")
 ylabel("Areal Mass $$[kg/m^2]$$")
-
+title("Areal Mass of a Single Lamina")
 dmdvf = mean(diff(m2));
 
 %% 1.1 Design for Stiffness
@@ -108,7 +164,7 @@ Dyy_vec = zeros(length(V_f),1);
 %layup = [90 60 -60 45 -45 0 0 0 0 0 0 -45 45 -60 60 90];
 % layup = [55 0 90 60 -45  0 -60 60 0  45 -60 90 0 -50];
 % layup = [0 0 0 0 0 0 0 0];
-layup = [0 5 -65 15 45 0 0 45 15 -65 5 0];
+layup = [90 5 -65 15 45 0 0 45 15 -65 5 90];
 for i = 1:length(V_f)
     composite_properties = [V_f(i), xi_1, xi_2];
     t = t_from_Vf(V_f(i));
@@ -329,7 +385,7 @@ stiff_combined_pass = strengthCheck(deg2rad(stiff_layup), 0.49, true);
 
 composite_properties = [strength_pick.Vf, 1, 1];
 [~,~,strength_pick.ABD] = laminate_stiffness(fiber_properties,matrix_properties,composite_properties, deg2rad(strength_pick.layup), strength_pick.tvec(1));
-strength_combined_pass = stiffnessCheck(strength_pick.ABD)
+strength_combined_pass = stiffnessCheck(strength_pick.ABD);
 
 % only dyy fails!
 % what if we add a 90 on the outside?
@@ -348,4 +404,41 @@ for i = 1:length(Vf)
 end
 
 %% Need to go to 17:
+
+V_f = 0.4:0.1:0.65;
+% V_f = 0.65;
+count = 0;
+for i = 1:length(V_f)
+    fprintf("Checking V_f = %0.2f\n", V_f(i))
+    % [count, winners, elapsedTime] = parCheck_c(15, 10, 3, V_f(i));
+    [count, winners, elapsedTime] = parCheck_c_mex(15, 10, 4, V_f(i));
+    if count > 0
+        break
+    end
+end
+
+%%
+load Functions\picks.mat
+% V_f = 0.4:0.1:0.65;
+
+
+stiff_layup = [0 90 0 75 0 0 0 0 0 75 0 90 0];
+strong_layup = [0 0 0 0 0 90 90 0 0 90 90 0 0 0 0 0];
+
+strengthCheck(deg2rad(strong_layup),0.49,true)
+grid on
+grid minor
+xticks(1:16)
+xticklabels(1:16)
+xlabel("Laminas")
+ylabel("Tsai-Wu Criteria")
+title("Option 3, $$V_f = 49\%$$")
+
+
+% Vf = 0.4;
+% 
+% layup = [90 0 0 0 0 0 0 0 0 90 90 90 0 0 0 0 0 0 0 0 90];
+% [pass, criteria] = checkBoth(layup, Vf, true);
+    
+
 
